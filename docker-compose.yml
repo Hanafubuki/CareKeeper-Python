@@ -1,0 +1,37 @@
+version: '3.12'
+
+volumes:
+  postgres_data2:
+
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+    environment:
+      DEBUG: 1
+      LOG_LEVEL: "debug"
+    env_file:
+      - ./.env
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:8000"
+    restart: on-failure
+
+  postgres:
+    image: postgres:16.1-alpine
+    command:
+      - "--log_statement=all"
+      - "--log_destination=stderr"
+    ports:
+      - "6432:5432"
+    logging:
+      options:
+        max-size: "5m"
+    env_file:
+      - ./.env
+    volumes:
+      - postgres_data2:/var/lib/postgresql/data
